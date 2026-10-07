@@ -11,7 +11,13 @@ import type { Role } from "@/lib/store";
  */
 export async function getActingRole(): Promise<Role> {
   const cookieJar = await cookies();
-  const session = readSession(cookieJar.get(SESSION_COOKIE)?.value ?? null);
+  // readSession() parses a Cookie header, so serialise the jar rather than
+  // passing a bare value (which would never match the cookie name).
+  const cookieHeader = cookieJar
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+  const session = readSession(cookieHeader || null);
   if (session) return session.role;
 
   if (process.env.POLARIS_ALLOW_ROLE_HEADER === "true") {
