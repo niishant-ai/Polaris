@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { CustomCursor, LoadingVeil, ScrollProgress, ToastRail } from "@/components/chrome";
+import { PagePatterns } from "@/components/page-patterns";
 import { AppProviders } from "@/components/providers";
 import { SiteShell } from "@/components/site-shell";
 import "./globals.css";
@@ -48,6 +49,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font -- App Router
+            has no pages/_document; the stylesheet must live in the root layout. */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:opsz,wght@14..32,300..700&family=JetBrains+Mono:wght@400;500&display=swap"
@@ -55,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="min-h-dvh bg-bg text-ink antialiased">
         <AppProviders>
+          <PagePatterns />
           <LoadingVeil />
           <ScrollProgress />
           <CustomCursor />

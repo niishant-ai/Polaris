@@ -125,9 +125,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  // The mobile menu closes on navigation via the link handlers below rather
+  // than an effect, so no state is set during the render/mount pass.
 
   return (
     <>
@@ -209,6 +208,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   <li key={href}>
                     <Link
                       href={href}
+                      onClick={() => setMenuOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                         pathname === href ? "bg-brand-soft text-brand" : "text-ink-2 hover:bg-surface-2",

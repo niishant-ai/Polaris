@@ -113,15 +113,13 @@ export function CustomCursor() {
 
 export function LoadingVeil() {
   const reduced = useReducedMotion() ?? false;
-  const [done, setDone] = useState(true);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("polaris.entered") === "1") return;
-    setDone(false);
-    const timer = window.setTimeout(() => {
-      setDone(true);
-      sessionStorage.setItem("polaris.entered", "1");
-    }, reduced ? 60 : 780);
+    // The veil is a decorative first-paint animation. React state is only
+    // touched from a timer callback (an external event), never synchronously
+    // inside the effect body, which keeps the render pass single-shot.
+    const timer = window.setTimeout(() => setDone(true), reduced ? 120 : 820);
     return () => window.clearTimeout(timer);
   }, [reduced]);
 

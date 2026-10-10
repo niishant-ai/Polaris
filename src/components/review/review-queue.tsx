@@ -39,7 +39,7 @@ export function ReviewQueue({ initialDrafts }: { initialDrafts: DraftSummary[] }
   const role = usePolarStore((s) => s.role);
   const hydrated = usePolarStore((s) => s.hydrated);
   const [tab, setTab] = useState<TabId>("in_review");
-  const [selectedId, setSelectedId] = useState<string | null>(initialDrafts[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [channel, setChannel] = useState("website");
   const [feedback, setFeedback] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
@@ -57,11 +57,10 @@ export function ReviewQueue({ initialDrafts }: { initialDrafts: DraftSummary[] }
     return acc;
   }, {});
   const visible = drafts.filter((d) => d.status === tab);
-  const selected = drafts.find((d) => d.id === selectedId) ?? visible[0] ?? null;
-
-  useEffect(() => {
-    if (!selectedId && visible.length > 0) setSelectedId(visible[0].id);
-  }, [selectedId, visible]);
+  // Derive the active row instead of syncing it into state via an effect:
+  // an explicitly chosen draft wins, otherwise fall back to the first visible.
+  const explicit = drafts.find((d) => d.id === selectedId) ?? null;
+  const selected = explicit ?? visible[0] ?? null;
 
   const transition = useMutation({
     mutationFn: async (payload: { id: string; event: string; note?: string; channel?: string }) => {

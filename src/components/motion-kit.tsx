@@ -140,8 +140,10 @@ export function Counter({
   useEffect(() => {
     if (!inView) return;
     if (reduced) {
-      setValue(to);
-      return;
+      // Defer to the next frame so the reduced-motion end state is applied
+      // from a callback, not synchronously during the effect body.
+      const frame = requestAnimationFrame(() => setValue(to));
+      return () => cancelAnimationFrame(frame);
     }
     let frame = 0;
     const start = performance.now();

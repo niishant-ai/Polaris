@@ -1,12 +1,21 @@
 "use client";
 
 import { Monitor, Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/utils";
 
 type ThemeChoice = "system" | "light" | "dark";
 const STORAGE_KEY = "polaris.theme";
+
+/** True after hydration, false during SSR — avoids a theme flash mismatch. */
+const emptySubscribe = () => () => {};
+
+function readStoredChoice(): ThemeChoice {
+  if (typeof window === "undefined") return "system";
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+}
 
 function applyChoice(choice: ThemeChoice) {
   const root = document.documentElement;
@@ -18,16 +27,15 @@ function applyChoice(choice: ThemeChoice) {
 }
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const [choice, setChoice] = useState<ThemeChoice>("system");
-  const [mounted, setMounted] = useState(false);
+  // Seed from storage on the client so no setState-in-effect is needed.
+  const [choice, setChoice] = useState<ThemeChoice>(readStoredChoice);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const initial: ThemeChoice =
-      stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
-    setChoice(initial);
-    setMounted(true);
-
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
       const current = (window.localStorage.getItem(STORAGE_KEY) ?? "system") as ThemeChoice;

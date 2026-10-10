@@ -50,6 +50,10 @@
   --shadow-4: 0 1px 2px rgb(10 14 26 / 0.06), 0 8px 20px rgb(10 14 26 / 0.08), 0 32px 70px rgb(10 14 26 / 0.12);
   --mark-bg: oklch(0.9 0.09 220 / 0.34);
   --grid-line: oklch(0.55 0.09 234 / 0.055);
+  /* background pattern strokes — deliberately fainter than the grid so the
+     decorative layers never compete with editorial type */
+  --pattern-line: oklch(0.55 0.09 234 / 0.06);
+  --pattern-line-strong: oklch(0.55 0.09 234 / 0.085);
   --hairline: color-mix(in oklab, var(--line) 88%, transparent);
 }
 
@@ -90,6 +94,8 @@
   --shadow-4: 0 1px 2px rgb(0 0 0 / 0.55), 0 10px 24px rgb(0 0 0 / 0.5), 0 40px 90px rgb(0 0 0 / 0.65);
   --mark-bg: oklch(0.78 0.13 176 / 0.22);
   --grid-line: oklch(0.75 0.11 234 / 0.05);
+  --pattern-line: oklch(0.82 0.1 234 / 0.055);
+  --pattern-line-strong: oklch(0.82 0.1 234 / 0.08);
   --hairline: color-mix(in oklab, var(--line) 90%, transparent);
 }
 
@@ -276,6 +282,94 @@ h1, h2, h3, h4 {
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 78%);
+}
+
+/* ----------------------------------------------------------------------------
+   Background pattern layers
+   ----------------------------------------------------------------------------
+   Four SVG-backed pattterns (polar grid, ice crystal, contour/topographic,
+   fine dot matrix) plus technical hairlines. All are single-image, no JS,
+   mask-faded at the edges and hidden under prefers-reduced-motion.
+   Compose with `.pattern`, then add a modifier.
+   ---------------------------------------------------------------------------- */
+
+.pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+  opacity: 1;
+}
+
+/* Stacking context for the decorative layers.
+   z-index: -1 paints these above the body background but *behind* all
+   in-flow content, so patterns can never veil text or controls. */
+.pattern-stack {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 1. Polar grid — longitude/latitude graticule with a soft radial fade. */
+.pattern-polar {
+  background-image:
+    linear-gradient(to right, var(--pattern-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--pattern-line) 1px, transparent 1px),
+    linear-gradient(to right, var(--pattern-line-strong) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--pattern-line-strong) 1px, transparent 1px);
+  background-size: 16px 16px, 16px 16px, 128px 128px, 128px 128px;
+  mask-image: radial-gradient(ellipse 80% 62% at 50% 26%, black 24%, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 62% at 50% 26%, black 24%, transparent 76%);
+}
+
+/* 2. Ice crystal — hexagonal lattice, evoking sea-ice crystal structure. */
+.pattern-crystal {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112' fill='none' stroke='%236b8fb8' stroke-opacity='0.5' stroke-width='0.75'%3E%3Cpath d='M56 6v100M13 31l86 50M13 81l86-50'/%3E%3Ccircle cx='56' cy='56' r='26'/%3E%3Ccircle cx='56' cy='56' r='9'/%3E%3Cpath d='M56 6l-5 7h10zM56 106l-5-7h10z'/%3E%3C/svg%3E");
+  background-size: 112px 112px;
+  mask-image: radial-gradient(ellipse 74% 58% at 50% 34%, black 20%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 74% 58% at 50% 34%, black 20%, transparent 72%);
+}
+
+/* 3. Contour lines — topographic survey feel for data-heavy sections. */
+.pattern-contour {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240' fill='none' stroke='%23749bc4' stroke-opacity='0.42' stroke-width='0.6'%3E%3Cpath d='M-20 60c40-26 78-26 118 2s80 30 162-12'/%3E%3Cpath d='M-20 100c40-26 78-26 118 2s80 30 162-12'/%3E%3Cpath d='M-20 140c40-26 78-26 118 2s80 30 162-12'/%3E%3Cpath d='M-20 180c40-26 78-26 118 2s80 30 162-12'/%3E%3Cpath d='M-20 220c40-26 78-26 118 2s80 30 162-12'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+  mask-image: linear-gradient(to bottom, transparent, black 22%, black 76%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 22%, black 76%, transparent);
+}
+
+/* 4. Dot matrix — fine measurement grid for dashboards and stat bands. */
+.pattern-dot {
+  background-image: radial-gradient(var(--pattern-line-strong) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 78% 64% at 50% 40%, black 18%, transparent 74%);
+  -webkit-mask-image: radial-gradient(ellipse 78% 64% at 50% 40%, black 18%, transparent 74%);
+}
+
+/* Technical hairlines — long thin rules suggesting instrument traces. */
+.pattern-rules {
+  background-image:
+    linear-gradient(90deg, transparent, var(--pattern-line-strong) 18%, transparent 42%),
+    linear-gradient(90deg, transparent 58%, var(--pattern-line-strong) 82%, transparent);
+  background-size: 100% 1px, 100% 1px;
+  background-position: 0 28%, 0 72%;
+  background-repeat: no-repeat;
+}
+
+/* Blends: keep decorative layers behind content without washing out type. */
+.pattern-soft { opacity: 0.7; }
+.pattern-multiply { mix-blend-mode: multiply; }
+
+[data-theme="dark"] .pattern-multiply { mix-blend-mode: screen; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pattern { display: none !important; }
+}
+
+@media print {
+  .pattern { display: none !important; }
 }
 
 /* 2% film grain — mix-blend-overlay, GPU cheap (static bg image) */

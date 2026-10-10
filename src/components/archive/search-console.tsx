@@ -361,7 +361,7 @@ export function SearchConsole({
     retry: 1,
   });
 
-  const results = data?.results ?? [];
+  const results = useMemo(() => data?.results ?? [], [data]);
   const visible = useMemo(
     () => (expeditionSlug ? results.filter((r) => r.asset.expeditionSlug === expeditionSlug) : results),
     [results, expeditionSlug],
